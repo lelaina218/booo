@@ -959,8 +959,8 @@ OP2 넘어와서 괜찮았나요? 점점 지친 직장인이 되어가는게 조
 ];
     /*DEFAULT_LETTERS_END*/
 
-    let lettersData = JSON.parse(localStorage.getItem('farm_letters_v10')) || defaultLetters;
-    let readIds = new Set(JSON.parse(localStorage.getItem('farm_read_v10') || '[]'));
+    let lettersData = JSON.parse(localStorage.getItem('farm_letters_vbooo')) || defaultLetters;
+    let readIds = new Set(JSON.parse(localStorage.getItem('farm_read_vbooo') || '[]'));
 
     /* =====================================================================
        [2] Web Audio API 사운드 시스템
@@ -1810,7 +1810,7 @@ OP2 넘어와서 괜찮았나요? 점점 지친 직장인이 되어가는게 조
       playBaaSound(1.0);
 
       readIds.add(sheep.id);
-      localStorage.setItem('farm_read_v10', JSON.stringify([...readIds]));
+      localStorage.setItem('farm_read_vbooo', JSON.stringify([...readIds]));
 
       bubbleAuthor.textContent = `From. ${sheep.data.author}`;
       bubbleSheepType.textContent = sheep.design.label;
@@ -2179,9 +2179,9 @@ OP2 넘어와서 괜찮았나요? 점점 지친 직장인이 되어가는게 조
       const parsed = readTableData();
       if (parsed.length > 0) {
         lettersData = parsed;
-        localStorage.setItem('farm_letters_v10', JSON.stringify(lettersData));
+        localStorage.setItem('farm_letters_vbooo', JSON.stringify(lettersData));
         readIds.clear();
-        localStorage.removeItem('farm_read_v10');
+        localStorage.removeItem('farm_read_vbooo');
         closeBubble();
         initSheeps();
         adminModal.style.display = 'none';
@@ -2193,7 +2193,7 @@ OP2 넘어와서 괜찮았나요? 점점 지친 직장인이 되어가는게 조
       if (parsed.length === 0) return;
 
       lettersData = parsed;
-      localStorage.setItem('farm_letters_v10', JSON.stringify(lettersData));
+      localStorage.setItem('farm_letters_vbooo', JSON.stringify(lettersData));
       initSheeps();
 
       const currentDocHtml = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
