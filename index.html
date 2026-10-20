@@ -1,0 +1,2234 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<script id="codepen-helper" src="https://public.codepenassets.com/preview/index.ac0a5b3b51a60183a302a4a7e1ee03.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🌿 지영P를 영원히 그리워하는 목장 🌿</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=DungGeunMo&amp;display=swap" rel="stylesheet">
+  <!-- 가독성 좋고 예쁜 갈무리(Galmuri11) 폰트 불러오기 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/galmuri@latest/dist/galmuri.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      margin: 0;
+      padding: 0;
+    }
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      /* 전체 페이지 기본 폰트를 Galmuri11로 통일 */
+      font-family: 'Galmuri11', monospace, sans-serif;
+      background-color: #2b483c;
+      touch-action: manipulation;
+    }
+
+    #game-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #468c84;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      image-rendering: pixelated;
+    }
+
+    /* 초기 인트로 타이틀 화면 */
+    .intro-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(22, 38, 32, 0.72);
+      backdrop-filter: blur(4px);
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      transition: opacity 0.45s ease;
+    }
+    .intro-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .intro-card {
+      background: #fffdf2;
+      border: 4px solid #28392e;
+      box-shadow: 8px 8px 0 #18241c;
+      border-radius: 14px;
+      max-width: 380px;
+      width: 100%;
+      padding: 28px 22px 24px;
+      text-align: center;
+      position: relative;
+      animation: floatCard 3s ease-in-out infinite;
+    }
+
+    @keyframes floatCard {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .intro-pixel-badge {
+      display: inline-block;
+      background: #1e6091;
+      color: #ffea79;
+      border: 2px solid #28392e;
+      padding: 5px 12px;
+      font-size: 11px;
+      font-weight: bold;
+      border-radius: 6px;
+      margin-bottom: 14px;
+      box-shadow: 2px 2px 0 #28392e;
+    }
+
+    .intro-title {
+      font-size: 17px;
+      font-weight: bold;
+      color: #28392e;
+      line-height: 1.5;
+      margin-bottom: 14px;
+      word-break: keep-all;
+    }
+
+    .intro-divider {
+      height: 2px;
+      background: repeating-linear-gradient(to right, #8c5220 0, #8c5220 6px, transparent 6px, transparent 12px);
+      margin: 14px 0;
+    }
+
+    .intro-subtitle {
+      font-size: 12.5px;
+      color: #3b4d42;
+      line-height: 1.7;
+      margin-bottom: 24px;
+      word-break: keep-all;
+    }
+
+    .btn-enter {
+      background: #f7d070;
+      color: #28392e;
+      border: 3px solid #28392e;
+      box-shadow: 4px 4px 0 #28392e;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: bold;
+      font-family: inherit;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      transition: transform 0.1s;
+    }
+    .btn-enter:active {
+      transform: translate(3px, 3px);
+      box-shadow: 1px 1px 0 #28392e;
+    }
+
+    /* 상단 UI 바 (버튼 폰트 통일) */
+    .top-bar {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      right: 14px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      z-index: 50;
+      pointer-events: none;
+    }
+
+    .btn-top {
+      pointer-events: auto;
+      background: #f7d070;
+      border: 3px solid #28392e;
+      box-shadow: 3px 3px 0 #28392e;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: bold;
+      color: #28392e;
+      cursor: pointer;
+      border-radius: 6px;
+      font-family: inherit;
+      transition: transform 0.1s;
+    }
+    .btn-top.sound-btn {
+      background: #fffdf0;
+    }
+    .btn-top.sound-btn.muted {
+      background: #d8d4c5;
+      color: #6c757d;
+    }
+    .btn-top:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0 #28392e;
+    }
+
+    /* 하단 안내 텍스트 */
+    .hint-bar {
+      position: absolute;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(25, 38, 30, 0.82);
+      border: 2px solid #fffdf0;
+      color: #fffdf0;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 11px;
+      pointer-events: none;
+      z-index: 40;
+      white-space: nowrap;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    }
+
+    /* ==========================================
+       필드 위 양 머리 말풍선
+       ========================================== */
+    .speech-bubble-container {
+      position: absolute;
+      z-index: 100;
+      transform: translate(-50%, -100%);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: center;
+      pointer-events: auto;
+      animation: popUp 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      width: 270px;
+      max-width: 88vw;
+    }
+
+    @keyframes popUp {
+      0% { transform: translate(-50%, -80%) scale(0.6); opacity: 0; }
+      100% { transform: translate(-50%, -100%) scale(1); opacity: 1; }
+    }
+
+    .bubble {
+      position: relative;
+      background: #ffffff;
+      border: 3px solid #28392e;
+      border-radius: 10px;
+      padding: 10px 12px;
+      color: #222;
+      box-shadow: 4px 4px 0 rgba(28, 42, 33, 0.75);
+      width: 100%;
+    }
+
+    .bubble .author {
+      font-size: 11.5px;
+      font-weight: bold;
+      color: #8c5220;
+      margin-bottom: 5px;
+      border-bottom: 2px dashed #e0d5be;
+      padding-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cell-banner {
+      display: inline-block;
+      font-size: 10.5px;
+      font-weight: bold;
+      background: #639e8d;
+      color: #ffffff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1.5px solid #28392e;
+      margin-bottom: 5px;
+    }
+
+    .bubble.secondary {
+      background: #fff9db;
+      border-color: #4a3e28;
+    }
+    .bubble.secondary .cell-banner {
+      background: #f0c96b;
+      color: #3d2f14;
+      border-color: #4a3e28;
+    }
+
+    .msg-scroll {
+      max-height: 130px;
+      overflow-y: auto;
+      padding-right: 4px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .msg-scroll::-webkit-scrollbar {
+      width: 5px;
+    }
+    .msg-scroll::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.04);
+      border-radius: 3px;
+    }
+    .msg-scroll::-webkit-scrollbar-thumb {
+      background: #8c7355;
+      border-radius: 3px;
+    }
+
+    .bubble .msg {
+      display: block;
+      font-size: 12.5px;
+      line-height: 1.5;
+      word-break: keep-all;
+      word-wrap: break-word;
+      white-space: pre-line;
+      color: #28392e;
+    }
+
+    .bubble-tail {
+      width: 0;
+      height: 0;
+      border-left: 9px solid transparent;
+      border-right: 9px solid transparent;
+      border-top: 11px solid #28392e;
+      margin-top: -3px;
+    }
+
+    /* 모달 공통 스타일 */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(18, 30, 24, 0.75);
+      backdrop-filter: blur(3px);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+    }
+
+    .modal-box {
+      background: #fffef2;
+      border: 4px solid #28392e;
+      box-shadow: 6px 6px 0 #1b261f;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 500px;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      background: #639e8d;
+      border-bottom: 3px solid #28392e;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #fffdf0;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .modal-close {
+      background: #e86a5d;
+      border: 2px solid #28392e;
+      box-shadow: 2px 2px 0 #28392e;
+      color: white;
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: inherit;
+      font-size: 13px;
+    }
+
+    .letter-list {
+      padding: 14px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .letter-card {
+      background: #ffffff;
+      border: 2px solid #28392e;
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: 3px 3px 0 #d5d0b5;
+      cursor: pointer;
+    }
+
+    .letter-card-header {
+      font-size: 12px;
+      font-weight: bold;
+      color: #8c5220;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #eeeadd;
+      padding-bottom: 5px;
+    }
+
+    .letter-cell {
+      font-size: 12.5px;
+      color: #2b3a30;
+      line-height: 1.5;
+      background: #f9f8f0;
+      border: 1px dashed #c7c3a9;
+      padding: 9px 11px;
+      border-radius: 6px;
+      margin-top: 6px;
+    }
+
+    .letter-cell.second {
+      background: #fffbeb;
+      border-color: #dfca8b;
+    }
+
+    .letter-cell .tag-banner {
+      display: inline-block;
+      font-size: 10.5px;
+      font-weight: bold;
+      background: #639e8d;
+      color: #ffffff;
+      padding: 2px 7px;
+      border-radius: 4px;
+      border: 1px solid #28392e;
+      margin-bottom: 5px;
+    }
+    .letter-cell.second .tag-banner {
+      background: #f0c96b;
+      color: #3d2f14;
+    }
+
+    .letter-cell .cell-body {
+      display: block;
+      white-space: pre-wrap;
+      word-break: keep-all;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    /* 관리자 창 스타일 */
+    .admin-body {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+    .paste-zone {
+      background: #fff8dc;
+      border: 2px dashed #d97706;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 11px;
+      line-height: 1.45;
+      color: #78350f;
+      text-align: center;
+      outline: none;
+      cursor: text;
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .paste-zone:focus {
+      background: #fef08a;
+      border-color: #b45309;
+    }
+
+    .table-wrapper {
+      max-height: 230px;
+      overflow-y: auto;
+      border: 2px solid #28392e;
+      border-radius: 6px;
+      background: #fff;
+    }
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+    .admin-table th {
+      background: #e2e8f0;
+      color: #1e293b;
+      padding: 6px 4px;
+      border-bottom: 2px solid #28392e;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    .admin-table td {
+      border-bottom: 1px solid #cbd5e1;
+      border-right: 1px solid #cbd5e1;
+      padding: 3px;
+      vertical-align: top;
+    }
+    .admin-table input, .admin-table textarea {
+      width: 100%;
+      border: 1px solid transparent;
+      font-family: inherit;
+      font-size: 11px;
+      padding: 4px;
+      background: transparent;
+      resize: vertical;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+    .admin-table input:focus, .admin-table textarea:focus {
+      border-color: #3b82f6;
+      background: #f8fafc;
+      outline: none;
+    }
+    .btn-del-row {
+      background: #ef4444;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    .admin-btn-row {
+      display: flex;
+      gap: 6px;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .btn-small {
+      background: #e2e8f0;
+      color: #1e293b;
+      border: 2px solid #28392e;
+      box-shadow: 2px 2px 0 #28392e;
+      padding: 7px 10px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 11.5px;
+      cursor: pointer;
+    }
+    .btn-save {
+      background: #558852;
+      color: white;
+      border: 2px solid #28392e;
+      box-shadow: 2px 2px 0 #28392e;
+      padding: 7px 12px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 11.5px;
+      cursor: pointer;
+    }
+    .btn-export-html {
+      width: 100%;
+      background: #1e6091;
+      color: #ffea79;
+      border: 2px solid #28392e;
+      box-shadow: 3px 3px 0 #28392e;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="game-container">
+    <canvas id="farmCanvas" width="1536" height="695"></canvas>
+
+    <!-- [1] 초기 인트로 타이틀 화면 -->
+    <div class="intro-overlay" id="introOverlay">
+      <div class="intro-card">
+        <div class="intro-pixel-badge">★ P4A BRX ROLLING PAPER ★</div>
+        <h1 class="intro-title">“P4A BRX를 떠나는<br>지영프로님!”</h1>
+        <div class="intro-divider"></div>
+        <p class="intro-subtitle">
+          저희가 그리울 때면 다시 찾아와 주세요.<br>
+          언제나 여기서 기다리고 있을게요! 🌿
+        </p>
+        <button class="btn-enter" id="enterFarmBtn">🐑 목장 입장</button>
+      </div>
+    </div>
+
+    <!-- [2] 상단 바 -->
+    <div class="top-bar">
+      <button class="btn-top sound-btn" id="soundToggleBtn">🔊 소리 ON</button>
+      <button class="btn-top" id="openListBtn">📜 편지 모아보기</button>
+    </div>
+
+    <div class="hint-bar">양을 누르면 편지가 열리고, 풀밭을 누르면 간식(🥕🌾)을 줄 수 있어요!</div>
+
+    <!-- [3] 양 터치 시 머리 위에 바로 뜨는 말풍선 -->
+    <div id="speechBubble" class="speech-bubble-container" style="display: flex; left: 1098px; top: 428.449px;">
+      <!-- 첫 번째 말풍선 -->
+      <div class="bubble" id="bubble1">
+        <div class="author">
+          <span id="bubbleAuthor">From. ㅇㅅㅇ</span>
+          <span id="bubbleSheepType">🔮 별빛보라양</span>
+        </div>
+        <div id="wrapBubble1" style="display: block;">
+          <div class="cell-banner">💌 편지</div>
+          <div class="msg-scroll">
+            <div class="msg" id="bubbleMsg1">예 뭐 잘지내시고... 행복하시고...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 두 번째 말풍선 -->
+      <div class="bubble secondary" id="bubble2" style="display: block;">
+        <div class="cell-banner" id="bubbleCat2">✨ 프로님께 고마웠던 일!</div>
+        <div class="msg-scroll">
+          <div class="msg" id="bubbleMsg2">클리닝 처음하시는데 리딩시켜서 미안했는데 잘해주셔서 감사여.. 뭘 하시든 잘하실듯</div>
+        </div>
+      </div>
+
+      <div class="bubble-tail"></div>
+    </div>
+
+    <!-- [4] 리스트 형식으로 편지 모아보기 모달 -->
+    <div class="modal-overlay" id="listModal" style="display: none;">
+      <div class="modal-box">
+        <div class="modal-header" id="secretAdminTrigger">
+          <span>📜 도착한 롤링페이퍼 모아보기</span>
+          <button class="modal-close" id="closeListBtn">✕</button>
+        </div>
+        <div class="letter-list" id="modalLetterList"></div>
+      </div>
+    </div>
+
+    <!-- [5] 스마트 표 관리창 -->
+    <div class="modal-overlay" id="adminModal" style="display: none;">
+      <div class="modal-box">
+        <div class="modal-header" style="background: #8c5220;">
+          <span>🔒 스마트 표 관리창 (최대 30명)</span>
+          <button class="modal-close" id="closeAdminBtn">✕</button>
+        </div>
+        <div class="admin-body">
+          <div class="paste-zone" id="excelPasteZone" contenteditable="true">✅ <strong>총 23명의 편지와 카테고리 배너가 입력되었습니다!</strong><br>아래 [✅ 목장에 바로 적용] 버튼을 눌러주세요.</div>
+
+          <datalist id="catOptions">
+            <option value="프로님께 고마웠던 일!">
+            </option><option value="이행시">
+            </option><option value="첫인상과 지금 인상">
+          </option></datalist>
+
+          <div class="table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th style="width: 17%;">이름</th>
+                  <th style="width: 31%;">편지</th>
+                  <th style="width: 22%;">배너(카테고리)</th>
+                  <th style="width: 23%;">두 번째 내용</th>
+                  <th style="width: 7%;">삭제</th>
+                </tr>
+              </thead>
+              <tbody id="adminTableBody"><tr>
+        <td><input type="text" class="inp-author" placeholder="이름" value="BRX OP2 포에버~~~"></td>
+        <td><textarea class="inp-msg1" rows="2" placeholder="편지 내용">가지마세요!</textarea></td>
+        <td><input type="text" class="inp-cat2" list="catOptions" placeholder="배너명" value="지 은 이행시"></td>
+        <td><textarea class="inp-msg2" rows="2" placeholder="두 번째 내용">지: 지은프로님은, 은: 그냥 가지마세요!</textarea></td>
+        <td style="text-align:center;"><button type="button" class="btn-del-row">✕</button></td>
+      </tr><tr>
+        <td><input type="text" class="inp-author" placeholder="이름" value="비밀"></td>
+        <td><textarea class="inp-msg1" rows="2" placeholder="편지 내용">왠지 성공할 것 같아요,,,</textarea></td>
+        <td><input type="text" class="inp-cat2" list="catOptions" placeholder="배너명" value="첫인상과 지금 인상"></td>
+        <td><textarea class="inp-msg2" rows="2" placeholder="두 번째 내용">뭐든 알잘딱 이었던 지은프로님,,,</textarea></td>
+        <td style="text-align:center;"><button type="button" class="btn-del-row">✕</button></td>
+      </tr><tr>
+        <td><input type="text" class="inp-author" placeholder="이름" value="내가누구게"></td>
+        <td><textarea class="inp-msg1" rows="2" placeholder="편지 내용">마케팅의 신 으로 등극하시길 기원합니다. 응원해요오오!!</textarea></td>
+        <td><input type="text" class="inp-cat2" list="catOptions" placeholder="배너명" value="지 은 이행시"></td>
+        <td><textarea class="inp-msg2" rows="2" placeholder="두 번째 내용">지 축을 흔드는
+은 가누의 팔콘 펀치</textarea></td>
+        <td style="text-align:center;"><button type="button" class="btn-del-row">✕</button></td>
+      </tr><tr>
+        <td><input type="text" class="inp-author" placeholder="이름" value="."></td>
+        <td><textarea class="inp-msg1" rows="2" placeholder="편지 내용">지은프로님 나중에 후기 낋여주세요~!!</textarea></td>
+        <td><input type="text" class="inp-cat2" list="catOptions" placeholder="배너명" value="지 은 이행시"></td>
+        <td><textarea class="inp-msg2" rows="2" placeholder="두 번째 내용">지: 지금부터  은:(는) 마케팅 화이팅 응원해요~!</textarea></td>
+        <td style="text-align:center;"><button type="button" class="btn-del-row">✕</button></td>
+      </tr><tr>
+        <td><input type="text" class="inp-author" placeholder="이름" value="ㅇㅅㅇ"></td>
+        <td><textarea class="inp-msg1" rows="2" placeholder="편지 내용">예 뭐 잘지내시고... 행복하시고...</textarea></td>
+        <td><input type="text" class="inp-cat2" list="catOptions" placeholder="배너명" value="첫인상과 지금 인상"></td>
+        <td><textarea class="inp-msg2" rows="2" placeholder="두 번째 내용">수줍음이 많은 프로님인줄알았는데 같이 일해보니 생각보다 테토시고 재밌었음ㅋㅋ</textarea></td>
+        <td style="text-align:center;"><button type="button" class="btn-del-row">✕</button></td>
+      </tr><tr>
+        <td><input type="text" class="inp-author" placeholder="이름" value="저에요"></td>
+        <td><textarea class="inp-msg1" rows="2" placeholder="편지 내용">지은씨야,
+어느 순간 퀸메이커가 되어버린 난 그냥 순응하기로 했다.
+그냥 당신은 갈 것 같았다.
+지은 - 나 = 0 인데 이제 난 없다.
+사람들이 막 그런다. 지은씨 가서 어떡하냐고. 내가 묻고 싶다.
+난 어떡하지, 답을 아직도 찾고 있다. 왜냐? 아직 지은씨가 우리 부서에 있으니깐.
+그래요. 긴 말은 안할게요.
+우리 회사의 쌈뽕한 슬로건에 이제 힘써주세요. 화이팅.
+
+부서에서 같이 일하는 동안 너무 고마웠우 .. 눙물 ..</textarea></td>
+        <td><input type="text" class="inp-cat2" list="catOptions" placeholder="배너명" value="프로님께 고마웠던 일!"></td>
+        <td><textarea class="inp-msg2" rows="2" placeholder="두 번째 내용">항상.</textarea></td>
+        <td style="text-align:center;"><button type="button" class="btn-del-row">✕</button></td>
+      </tr><tr>
+        <td><input type="text" class="inp-author" placeholder="이름" value="김용"></td>
+        <td><textarea class="inp-msg1" rows="2" placeholder="편지 내용">간바레!</textarea></td>
+        <td><input type="text" class="inp-cat2" list="catOptions" placeholder="배너명" value="지 은 이행시"></td>
+        <td><textarea class="inp-msg2" rows="2" placeholder="두 번째 내용">지은 프로님,, 얼마 뵌 지도 안됐는데, 벌써 떠나시다니 정말 아쉽네요,,, 접점이 없음에도 좀 친해질 수 있었던 것 같아요 (프로님은 모르겠는데, 일단 저는 그렇게 생각해요.) 프로님의 쿨한 태도가 뭔가 편했는데,,, 더 못친해진게 아쉽네요,, 조심히 떠나시구,, 항상 건강하시구,, 마케팅,, 힘내시구,, 돌아오시면 제가 제 자리라도 비켜드릴게요,,</textarea></td>
+        <td style="text-align:center;"><button type="button" class="btn-del-row">✕</button></td>
+      </tr><tr>
+        <td><input type="text" class="inp-author" placeholder="이름" value="심규준"></td>
+        <td><textarea class="inp-msg1" rows="2" placeholder="편지 내용">어딜가서도 행복하게 회사생할하십쇼~~</textarea></td>
+        <td><input type="text" class="inp-cat2" list="catOptions" placeholder="배너명" value="첫인상과 지금 인상"></td>
+        <td><textarea class="inp-msg2" rows="2" placeholder="두 번째 내용">처음 만났을때와 지금이랑 한결같으십니다. 이야기 잘 들어주셔서 감사하고 시간이 빠르네요.</textarea></td>
+        <td style="text-align:center;"><button type="button" class="btn-del-row">✕</button></td>
+      </tr><tr>
+        <td><input type="text" class="inp-author" placeholder="이름" value="현경"></td>
+        <td><textarea class="inp-msg1" rows="2" placeholder="편지 내용">뿌로냄 .. 이제 막 친해진 거 같은데 떠나신다니 넘 아쉬워여..
+저희 BRX 잊으시면 안돼요
+가셔도 꼬옥 행복하시길 키키키</textarea></td>
+        <td><input type="text" class="inp-cat2" list="catOptions" placeholder="배너명" value="지 은 이행시"></td>
+        <td><textarea class="inp-msg2" rows="2" placeholder="두 번째 내용">지 은푸 못 떠나게
+은 팔찌 채워</textarea></td>
+        <td style="text-align:center;"><button type="button" class="btn-del-row">✕</button></td>
+      </tr><tr>
+        <td><input type="text" class="inp-author" placeholder="이름" value="손민우"></td>
+        <td><textarea class="inp-msg1" rows="2" placeholder="편지 내용">안녕하세요. 지은 프로님.
+OP2 로 오신지 얼마 안된 것 같은데,, 벌써 떠나신다고 하니 아쉬움이 몰려옵니다. 함께 일할 기회가 많이 없었죠 저희는,, 하지만, 프로님은 늘 열심히 노력하시는 분이시니 새롭게 간 부서에서도 잘 적응하리라 생각이 듭니다. 한 영화에는 이런 대사가 있습니다. "세상의 모든 만남은 오랜만에 재회" 라고합니다. 불교의 인연론과 마찬가지로 이번 생에서 처음 마주한 낯선 사람도, 실은 수많은 전생과 아득한 겁의 시간을 지나 다시 만난 귀한 인연이지요. 인연의 끝은 다른 소중한 인연의 시작인만큼 하나하나의 관계에 미련을 두지말고, 더욱 소중한 인연을 만날 수 있길, 멀리서나마 늘 기도하겠습니다.</textarea></td>
+        <td><input type="text" class="inp-cat2" list="catOptions" placeholder="배너명" value="프로님께 고마웠던 일!"></td>
+        <td><textarea class="inp-msg2" rows="2" placeholder="두 번째 내용">언제나</textarea></td>
+        <td style="text-align:center;"><button type="button" class="btn-del-row">✕</button></td>
+      </tr><tr>
+        <td><input type="text" class="inp-author" placeholder="이름" value="김바다"></td>
+        <td><textarea class="inp-msg1" rows="2" placeholder="편지 내용">프로님 부서 이동 소식을 듣고 프로님과 나누었던 사담들이 생각났어요.
+가서도 프로님의 배경지식 마구 활용하셔서 MFG와는 다른 또 다른 새로운 세계를 마구마구 확장하시길 바라요! 우리는 또 다음 주에 만나요...♡</textarea></td>
+        <td><input type="text" class="inp-cat2" list="catOptions" placeholder="배너명" value="프로님께 고마웠던 일!"></td>
+        <td><textarea class="inp-msg2" rows="2" placeholder="두 번째 내용">지은 프로님! 프로님과 올해 야간을 함께 다녀와서 참으로 기뻐요.
+그 전까지는 몰랐던 프로님의 유머러스함과 재치를 알게 되었고,
+무엇보다 프로님이랑 정은 프로님이랑 같이 이야기 나누었던 시간이 정말 즐거웠어요.
+회사 동료 분들과의 교환 독서는 지은/정은 프로님과 함께 였기에 할 수 있었다는 생각이 감히 드네요.
+제가 야간 하면서 많이 좋아했던(?) 두 분 모두 이제 BRX에 안계시다니... 이게 멘헤라가 아니면 뭘까요? 프로님의 책에서 부터 이 모든 게 다 예견된 일이였을까... OTL
+야간 마지막 달에 프로님이 남동공단 떡볶이 먹으러 가자고 이야기 꺼내주셔서 소중한 추억도 하나 쌓은 거 같아요. 아 참 그리고 덕분에 BHC 핫후라이드와 마라샹궈도 같이 먹을 수 있었고... 담에 저희 또 맛있는 거 먹으러 가요!! 글의 말미가 먹는 거라서 프로님께 고마웠던 일에 대한 포커스가 '음식'으로 된 거 같긴 한데 ^^; 기분 탓이에요. P4A BRX에서 프로님의 존재 자체가 의미있었고 고마웠다는 말을 하고 싶었어요. 제 맘 알죠? 모르시겠다면... 저를 한 번 쳐다봐주시겠어요? 윙크해드릴게요 &gt;_ㅇ</textarea></td>
+        <td style="text-align:center;"><button type="button" class="btn-del-row">✕</button></td>
+      </tr><tr>
+        <td><input type="text" class="inp-author" placeholder="이름" value="비~@#@~밀"></td>
+        <td><textarea class="inp-msg1" rows="2" placeholder="편지 내용">프로님 안녕하세요? 저에요... 프로님 성격 너무 좋아서 전부터 친해지고 싶었는데 프로님 떠나시기 직전에 겨우 친해진 것 같아 아쉬워요..?! 마케팅 팀 너무 멀고 쫌 그러니까 저희 중간에서 서성이다가 우연히 OR 인위적으로 만나요? 프로님의 시원시원하믄서도 꼼꼼한 면 업무적으로도 업무 외적으로도 많이 배웠어요 ㅎㅎ.. 지은프로님 짱!</textarea></td>
+        <td><input type="text" class="inp-cat2" list="catOptions" placeholder="배너명" value="지 은 이행시"></td>
+        <td><textarea class="inp-msg2" rows="2" placeholder="두 번째 내용">지 : 지은프로님?
+은 : 은근슬쩍 돌아와두 모른척 할게여?</textarea></td>
+        <td style="text-align:center;"><button type="button" class="btn-del-row">✕</button></td>
+      </tr><tr>
+        <td><input type="text" class="inp-author" placeholder="이름" value="ㅎㅅㅎ"></td>
+        <td><textarea class="inp-msg1" rows="2" placeholder="편지 내용"></textarea></td>
+        <td><input type="text" class="inp-cat2" list="catOptions" placeholder="배너명" value="첫인상과 지금 인상"></td>
+        <td><textarea class="inp-msg2" rows="2" placeholder="두 번째 내용">프로님.. 프로님은 기억 못하실수도 있지만.. 프로님과 저의 첫 만남은 1052 앞에서 였답니다.. (1051..? 1053..? 하여튼 그 어딘가예요) 그 때 저는 영근 프로님을 따라다니구 있었구.. 그 날 수만갈래로 삐져나오던 프로님의 잔머리들이 눈에 아직도 선하네요..... 오피원에서부터 같이 왔던 프로님들이 점점 이렇게 떠나가니까 ... 속이 참 쓰리네요.... 가지마세요............. 프로님은 모르셨겠지만.. 그냥 저 혼자.. 괜히 꽤나 프로님의 존재 자체를 좀 의지하고 있었는데.. 가신다니까 약간 허망하고? 허탈하고? 그러네요.. 이왕 가시는거 거기 확 휘어잡아서!! 좋은 사람들이랑!!!! 더 행복하게 지내세요 ㅠㅡㅜ 눈물을 머금고.. 보내드립니다.. 여기서 응원하구 있을게용... 파이팅..... !!!!!!!!! (가지마)</textarea></td>
+        <td style="text-align:center;"><button type="button" class="btn-del-row">✕</button></td>
+      </tr><tr>
+        <td><input type="text" class="inp-author" placeholder="이름" value="YIN"></td>
+        <td><textarea class="inp-msg1" rows="2" placeholder="편지 내용">지은프로님 고생 많았어요!! 첫만남이 엊그제 같은데 벌써 이별이네요ㅠㅜ
+OP2 넘어와서 괜찮았나요? 점점 지친 직장인이 되어가는게 조금 안타까웠어요ㅠㅜ
+마케팅팀에서는 여기보다 더 행복해지길 바라요
+부디 행복한 지은시 응원...</textarea></td>
+        <td><input type="text" class="inp-cat2" list="catOptions" placeholder="배너명" value="첫인상과 지금 인상"></td>
+        <td><textarea class="inp-msg2" rows="2" placeholder="두 번째 내용">첫인상: 큐티뽀짝 행복한 지은씨
+현인상: 큐티뽀짝 지친 직장인 지은씨</textarea></td>
+        <td style="text-align:center;"><button type="button" class="btn-del-row">✕</button></td>
+      </tr><tr>
+        <td><input type="text" class="inp-author" placeholder="이름" value="송유리"></td>
+        <td><textarea class="inp-msg1" rows="2" placeholder="편지 내용">이지은 프로님, 안녕하세요! 이번에 BRX OP2에 새로 배정받게 되어서 아직 직접 인사드리지는 못했지만, 지은 프로님의 부서 이동을 정말 정말 축하드립니다!! ㅎㅎ 새로운 부서에서도 멋지게 잘 적응하시고, 항상 건강하시길 바라겠습니다!! ㅎㅎ 다시 한 번 정말 축하드립니다!!!</textarea></td>
+        <td><input type="text" class="inp-cat2" list="catOptions" placeholder="배너명" value="프로님께 고마웠던 일!"></td>
+        <td><textarea class="inp-msg2" rows="2" placeholder="두 번째 내용"></textarea></td>
+        <td style="text-align:center;"><button type="button" class="btn-del-row">✕</button></td>
+      </tr><tr>
+        <td><input type="text" class="inp-author" placeholder="이름" value="리액터신입"></td>
+        <td><textarea class="inp-msg1" rows="2" placeholder="편지 내용">지은프로님~~ 가시기전에 같이 서포트조에서 일할 수 있었어서 완전 럭키였습니당 히히 제가 꿈에그리던 몽골을 다녀오셔서 너무 부러웠는데 저도 언젠가 용기를 얻어 몽골로 호딱 여행 다녀올게용
+마케팅팀 근무후기 너무너무 궁금해요!~ 나중에 여유있으실때 커피타임 슬쩍 가지면서 이야기 많이 들려주세용!! 프로님이야 늘 잘하시니까~ 걱정 없습니다 ㅎㅎ 늘 응원하겠습니닷 화이링♡♡</textarea></td>
+        <td><input type="text" class="inp-cat2" list="catOptions" placeholder="배너명" value="프로님께 고마웠던 일!"></td>
+        <td><textarea class="inp-msg2" rows="2" placeholder="두 번째 내용"></textarea></td>
+        <td style="text-align:center;"><button type="button" class="btn-del-row">✕</button></td>
+      </tr><tr>
+        <td><input type="text" class="inp-author" placeholder="이름" value="도인환"></td>
+        <td><textarea class="inp-msg1" rows="2" placeholder="편지 내용">항상 좋은 일만 있기를 바라겠습니다. 화이팅!</textarea></td>
+        <td><input type="text" class="inp-cat2" list="catOptions" placeholder="배너명" value="프로님께 고마웠던 일!"></td>
+        <td><textarea class="inp-msg2" rows="2" placeholder="두 번째 내용">알게 된 지 오래되진 않았지만 같이 BRX 리밸 할 때 진짜 큰 도움이었어요. 항상 고맙게 생각하겠습니다.</textarea></td>
+        <td style="text-align:center;"><button type="button" class="btn-del-row">✕</button></td>
+      </tr><tr>
+        <td><input type="text" class="inp-author" placeholder="이름" value="오쌍기"></td>
+        <td><textarea class="inp-msg1" rows="2" placeholder="편지 내용">좋은 일만 있으시길 바라겠습니다! 응원하겠습니다!</textarea></td>
+        <td><input type="text" class="inp-cat2" list="catOptions" placeholder="배너명" value="지 은 이행시"></td>
+        <td><textarea class="inp-msg2" rows="2" placeholder="두 번째 내용">지구 끝까지 찾아갑니다
+은혜 갚으러~~~~</textarea></td>
+        <td style="text-align:center;"><button type="button" class="btn-del-row">✕</button></td>
+      </tr><tr>
+        <td><input type="text" class="inp-author" placeholder="이름" value="김인서"></td>
+        <td><textarea class="inp-msg1" rows="2" placeholder="편지 내용">진짜 뼈92?</textarea></td>
+        <td><input type="text" class="inp-cat2" list="catOptions" placeholder="배너명" value="첫인상과 지금 인상"></td>
+        <td><textarea class="inp-msg2" rows="2" placeholder="두 번째 내용">OP 계속 바뀌면서 못 만나다가 이번에 야간 가서 처음 친해졌다고 생각했는데 그러고 뼈92 한 번도 못 간 게 제일 기억에 남네요... 이번 회식은 오시죠?</textarea></td>
+        <td style="text-align:center;"><button type="button" class="btn-del-row">✕</button></td>
+      </tr><tr>
+        <td><input type="text" class="inp-author" placeholder="이름" value="김소정"></td>
+        <td><textarea class="inp-msg1" rows="2" placeholder="편지 내용"></textarea></td>
+        <td><input type="text" class="inp-cat2" list="catOptions" placeholder="배너명" value="프로님께 고마웠던 일!"></td>
+        <td><textarea class="inp-msg2" rows="2" placeholder="두 번째 내용">프로님은 문제가 생겨도 혼자 척척 잘 해결해 나가시는 것 같아서 항상 대단하다고 생각했어요! 특히 그 PI 만들때... 프로님 안계셨으면 지금 먹통일듯 ,,,^^ 새로운 길로 가시는것 같은데 그것도 넘 대단하고 앞으로도 종종 연락해요 멋지당</textarea></td>
+        <td style="text-align:center;"><button type="button" class="btn-del-row">✕</button></td>
+      </tr><tr>
+        <td><input type="text" class="inp-author" placeholder="이름" value="."></td>
+        <td><textarea class="inp-msg1" rows="2" placeholder="편지 내용"></textarea></td>
+        <td><input type="text" class="inp-cat2" list="catOptions" placeholder="배너명" value="프로님께 고마웠던 일!"></td>
+        <td><textarea class="inp-msg2" rows="2" placeholder="두 번째 내용">( •̀ ω •́ )✧</textarea></td>
+        <td style="text-align:center;"><button type="button" class="btn-del-row">✕</button></td>
+      </tr><tr>
+        <td><input type="text" class="inp-author" placeholder="이름" value="백종연"></td>
+        <td><textarea class="inp-msg1" rows="2" placeholder="편지 내용">지은푸...!! 더 친해지고 싶었는데 같이 있던 시간이 너무도 짧았네여.... 야간이 하나도 안 겹쳐서 그런가 넘 아쉬워요ㅠㅠ 마케팅기획팀이라니 진짜 어떤 부서일지 너무 궁금하고 도전한 거 멋지고 대단해요...!! 다음에 꼭 한번 어떤 일 하는지 자랑해주셔야 돼요?!!! 새로운 부서 새로운 사람들 적응도 걱정되겠지만 잘하실거에요~!! 응원할게요!!!!!!</textarea></td>
+        <td><input type="text" class="inp-cat2" list="catOptions" placeholder="배너명" value="첫인상과 지금 인상"></td>
+        <td><textarea class="inp-msg2" rows="2" placeholder="두 번째 내용">지은프로님 첫 인상은 뭔가 따뜻하고 재밌는 사람이었구 지금 인상도 따뜻하고 재밌는 사람이에요ㅎㅎㅎㅎ 함께 ATF 창고에 주저앉아 사일런서를 오붓하게 조립하며 담소를 나누던 시간... 잊지 않을게여...</textarea></td>
+        <td style="text-align:center;"><button type="button" class="btn-del-row">✕</button></td>
+      </tr></tbody>
+            </table>
+          </div>
+
+          <div class="admin-btn-row">
+            <button class="btn-small" id="addRowBtn">➕ 한 줄 추가</button>
+            <button class="btn-small" id="clearAllRowsBtn">🗑️ 표 비우기</button>
+            <button class="btn-save" id="saveAdminBtn">✅ 목장에 바로 적용</button>
+          </div>
+
+          <button class="btn-export-html" id="copyFullHtmlBtn">📋 이 표가 영구 저장된 전체 HTML 코드 복사하기 (배포용)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =====================================================================
+       [1] 기본 롤링페이퍼 데이터
+       ===================================================================== */
+    /*DEFAULT_LETTERS_START*/
+    const defaultLetters = [
+      {
+            "author": "BRX OP2 포에버~~~",
+            "msg1": "가지마세요!",
+            "cat2": "지 은 이행시",
+            "msg2": "지: 지은프로님은, 은: 그냥 가지마세요!"
+      },
+      {
+            "author": "비밀",
+            "msg1": "왠지 성공할 것 같아요,,,",
+            "cat2": "첫인상과 지금 인상",
+            "msg2": "뭐든 알잘딱 이었던 지은프로님,,,"
+      },
+      {
+            "author": "내가누구게",
+            "msg1": "마케팅의 신 으로 등극하시길 기원합니다. 응원해요오오!!",
+            "cat2": "지 은 이행시",
+            "msg2": "지 축을 흔드는\n은 가누의 팔콘 펀치"
+      },
+      {
+            "author": ".",
+            "msg1": "지은프로님 나중에 후기 낋여주세요~!!",
+            "cat2": "지 은 이행시",
+            "msg2": "지: 지금부터  은:(는) 마케팅 화이팅 응원해요~!"
+      },
+      {
+            "author": "ㅇㅅㅇ",
+            "msg1": "예 뭐 잘지내시고... 행복하시고...",
+            "cat2": "첫인상과 지금 인상",
+            "msg2": "수줍음이 많은 프로님인줄알았는데 같이 일해보니 생각보다 테토시고 재밌었음ㅋㅋ"
+      },
+      {
+            "author": "저에요",
+            "msg1": "지은씨야,\n어느 순간 퀸메이커가 되어버린 난 그냥 순응하기로 했다.\n그냥 당신은 갈 것 같았다.\n지은 - 나 = 0 인데 이제 난 없다.\n사람들이 막 그런다. 지은씨 가서 어떡하냐고. 내가 묻고 싶다.\n난 어떡하지, 답을 아직도 찾고 있다. 왜냐? 아직 지은씨가 우리 부서에 있으니깐.\n그래요. 긴 말은 안할게요.\n우리 회사의 쌈뽕한 슬로건에 이제 힘써주세요. 화이팅.\n\n부서에서 같이 일하는 동안 너무 고마웠우 .. 눙물 ..",
+            "cat2": "프로님께 고마웠던 일!",
+            "msg2": "항상."
+      },
+      {
+            "author": "김용",
+            "msg1": "간바레!",
+            "cat2": "지 은 이행시",
+            "msg2": "지은 프로님,, 얼마 뵌 지도 안됐는데, 벌써 떠나시다니 정말 아쉽네요,,, 접점이 없음에도 좀 친해질 수 있었던 것 같아요 (프로님은 모르겠는데, 일단 저는 그렇게 생각해요.) 프로님의 쿨한 태도가 뭔가 편했는데,,, 더 못친해진게 아쉽네요,, 조심히 떠나시구,, 항상 건강하시구,, 마케팅,, 힘내시구,, 돌아오시면 제가 제 자리라도 비켜드릴게요,,"
+      },
+      {
+            "author": "심규준",
+            "msg1": "어딜가서도 행복하게 회사생할하십쇼~~",
+            "cat2": "첫인상과 지금 인상",
+            "msg2": "처음 만났을때와 지금이랑 한결같으십니다. 이야기 잘 들어주셔서 감사하고 시간이 빠르네요."
+      },
+      {
+            "author": "현경",
+            "msg1": "뿌로냄 .. 이제 막 친해진 거 같은데 떠나신다니 넘 아쉬워여..\n저희 BRX 잊으시면 안돼요\n가셔도 꼬옥 행복하시길 키키키",
+            "cat2": "지 은 이행시",
+            "msg2": "지 은푸 못 떠나게\n은 팔찌 채워"
+      },
+      {
+            "author": "손민우",
+            "msg1": "안녕하세요. 지은 프로님.\nOP2 로 오신지 얼마 안된 것 같은데,, 벌써 떠나신다고 하니 아쉬움이 몰려옵니다. 함께 일할 기회가 많이 없었죠 저희는,, 하지만, 프로님은 늘 열심히 노력하시는 분이시니 새롭게 간 부서에서도 잘 적응하리라 생각이 듭니다. 한 영화에는 이런 대사가 있습니다. \"세상의 모든 만남은 오랜만에 재회\" 라고합니다. 불교의 인연론과 마찬가지로 이번 생에서 처음 마주한 낯선 사람도, 실은 수많은 전생과 아득한 겁의 시간을 지나 다시 만난 귀한 인연이지요. 인연의 끝은 다른 소중한 인연의 시작인만큼 하나하나의 관계에 미련을 두지말고, 더욱 소중한 인연을 만날 수 있길, 멀리서나마 늘 기도하겠습니다.",
+            "cat2": "프로님께 고마웠던 일!",
+            "msg2": "언제나"
+      },
+      {
+            "author": "김바다",
+            "msg1": "프로님 부서 이동 소식을 듣고 프로님과 나누었던 사담들이 생각났어요.\n가서도 프로님의 배경지식 마구 활용하셔서 MFG와는 다른 또 다른 새로운 세계를 마구마구 확장하시길 바라요! 우리는 또 다음 주에 만나요...♡",
+            "cat2": "프로님께 고마웠던 일!",
+            "msg2": "지은 프로님! 프로님과 올해 야간을 함께 다녀와서 참으로 기뻐요.\n그 전까지는 몰랐던 프로님의 유머러스함과 재치를 알게 되었고,\n무엇보다 프로님이랑 정은 프로님이랑 같이 이야기 나누었던 시간이 정말 즐거웠어요.\n회사 동료 분들과의 교환 독서는 지은/정은 프로님과 함께 였기에 할 수 있었다는 생각이 감히 드네요.\n제가 야간 하면서 많이 좋아했던(?) 두 분 모두 이제 BRX에 안계시다니... 이게 멘헤라가 아니면 뭘까요? 프로님의 책에서 부터 이 모든 게 다 예견된 일이였을까... OTL\n야간 마지막 달에 프로님이 남동공단 떡볶이 먹으러 가자고 이야기 꺼내주셔서 소중한 추억도 하나 쌓은 거 같아요. 아 참 그리고 덕분에 BHC 핫후라이드와 마라샹궈도 같이 먹을 수 있었고... 담에 저희 또 맛있는 거 먹으러 가요!! 글의 말미가 먹는 거라서 프로님께 고마웠던 일에 대한 포커스가 '음식'으로 된 거 같긴 한데 ^^; 기분 탓이에요. P4A BRX에서 프로님의 존재 자체가 의미있었고 고마웠다는 말을 하고 싶었어요. 제 맘 알죠? 모르시겠다면... 저를 한 번 쳐다봐주시겠어요? 윙크해드릴게요 >_ㅇ"
+      },
+      {
+            "author": "비~@#@~밀",
+            "msg1": "프로님 안녕하세요? 저에요... 프로님 성격 너무 좋아서 전부터 친해지고 싶었는데 프로님 떠나시기 직전에 겨우 친해진 것 같아 아쉬워요..?! 마케팅 팀 너무 멀고 쫌 그러니까 저희 중간에서 서성이다가 우연히 OR 인위적으로 만나요? 프로님의 시원시원하믄서도 꼼꼼한 면 업무적으로도 업무 외적으로도 많이 배웠어요 ㅎㅎ.. 지은프로님 짱!",
+            "cat2": "지 은 이행시",
+            "msg2": "지 : 지은프로님?\n은 : 은근슬쩍 돌아와두 모른척 할게여?"
+      },
+      {
+            "author": "ㅎㅅㅎ",
+            "msg1": "",
+            "cat2": "첫인상과 지금 인상",
+            "msg2": "프로님.. 프로님은 기억 못하실수도 있지만.. 프로님과 저의 첫 만남은 1052 앞에서 였답니다.. (1051..? 1053..? 하여튼 그 어딘가예요) 그 때 저는 영근 프로님을 따라다니구 있었구.. 그 날 수만갈래로 삐져나오던 프로님의 잔머리들이 눈에 아직도 선하네요..... 오피원에서부터 같이 왔던 프로님들이 점점 이렇게 떠나가니까 ... 속이 참 쓰리네요.... 가지마세요............. 프로님은 모르셨겠지만.. 그냥 저 혼자.. 괜히 꽤나 프로님의 존재 자체를 좀 의지하고 있었는데.. 가신다니까 약간 허망하고? 허탈하고? 그러네요.. 이왕 가시는거 거기 확 휘어잡아서!! 좋은 사람들이랑!!!! 더 행복하게 지내세요 ㅠㅡㅜ 눈물을 머금고.. 보내드립니다.. 여기서 응원하구 있을게용... 파이팅..... !!!!!!!!! (가지마)"
+      },
+      {
+            "author": "YIN",
+            "msg1": "지은프로님 고생 많았어요!! 첫만남이 엊그제 같은데 벌써 이별이네요ㅠㅜ\nOP2 넘어와서 괜찮았나요? 점점 지친 직장인이 되어가는게 조금 안타까웠어요ㅠㅜ\n마케팅팀에서는 여기보다 더 행복해지길 바라요\n부디 행복한 지은시 응원...",
+            "cat2": "첫인상과 지금 인상",
+            "msg2": "첫인상: 큐티뽀짝 행복한 지은씨\n현인상: 큐티뽀짝 지친 직장인 지은씨"
+      },
+      {
+            "author": "송유리",
+            "msg1": "이지은 프로님, 안녕하세요! 이번에 BRX OP2에 새로 배정받게 되어서 아직 직접 인사드리지는 못했지만, 지은 프로님의 부서 이동을 정말 정말 축하드립니다!! ㅎㅎ 새로운 부서에서도 멋지게 잘 적응하시고, 항상 건강하시길 바라겠습니다!! ㅎㅎ 다시 한 번 정말 축하드립니다!!!",
+            "cat2": "프로님께 고마웠던 일!",
+            "msg2": ""
+      },
+      {
+            "author": "리액터신입",
+            "msg1": "지은프로님~~ 가시기전에 같이 서포트조에서 일할 수 있었어서 완전 럭키였습니당 히히 제가 꿈에그리던 몽골을 다녀오셔서 너무 부러웠는데 저도 언젠가 용기를 얻어 몽골로 호딱 여행 다녀올게용\n마케팅팀 근무후기 너무너무 궁금해요!~ 나중에 여유있으실때 커피타임 슬쩍 가지면서 이야기 많이 들려주세용!! 프로님이야 늘 잘하시니까~ 걱정 없습니다 ㅎㅎ 늘 응원하겠습니닷 화이링♡♡",
+            "cat2": "프로님께 고마웠던 일!",
+            "msg2": ""
+      },
+      {
+            "author": "도인환",
+            "msg1": "항상 좋은 일만 있기를 바라겠습니다. 화이팅!",
+            "cat2": "프로님께 고마웠던 일!",
+            "msg2": "알게 된 지 오래되진 않았지만 같이 BRX 리밸 할 때 진짜 큰 도움이었어요. 항상 고맙게 생각하겠습니다."
+      },
+      {
+            "author": "오쌍기",
+            "msg1": "좋은 일만 있으시길 바라겠습니다! 응원하겠습니다!",
+            "cat2": "지 은 이행시",
+            "msg2": "지구 끝까지 찾아갑니다\n은혜 갚으러~~~~"
+      },
+      {
+            "author": "김인서",
+            "msg1": "진짜 뼈92?",
+            "cat2": "첫인상과 지금 인상",
+            "msg2": "OP 계속 바뀌면서 못 만나다가 이번에 야간 가서 처음 친해졌다고 생각했는데 그러고 뼈92 한 번도 못 간 게 제일 기억에 남네요... 이번 회식은 오시죠?"
+      },
+      {
+            "author": "김소정",
+            "msg1": "",
+            "cat2": "프로님께 고마웠던 일!",
+            "msg2": "프로님은 문제가 생겨도 혼자 척척 잘 해결해 나가시는 것 같아서 항상 대단하다고 생각했어요! 특히 그 PI 만들때... 프로님 안계셨으면 지금 먹통일듯 ,,,^^ 새로운 길로 가시는것 같은데 그것도 넘 대단하고 앞으로도 종종 연락해요 멋지당"
+      },
+      {
+            "author": ".",
+            "msg1": "",
+            "cat2": "프로님께 고마웠던 일!",
+            "msg2": "( •̀ ω •́ )✧"
+      },
+      {
+            "author": "백종연",
+            "msg1": "지은푸...!! 더 친해지고 싶었는데 같이 있던 시간이 너무도 짧았네여.... 야간이 하나도 안 겹쳐서 그런가 넘 아쉬워요ㅠㅠ 마케팅기획팀이라니 진짜 어떤 부서일지 너무 궁금하고 도전한 거 멋지고 대단해요...!! 다음에 꼭 한번 어떤 일 하는지 자랑해주셔야 돼요?!!! 새로운 부서 새로운 사람들 적응도 걱정되겠지만 잘하실거에요~!! 응원할게요!!!!!!",
+            "cat2": "첫인상과 지금 인상",
+            "msg2": "지은프로님 첫 인상은 뭔가 따뜻하고 재밌는 사람이었구 지금 인상도 따뜻하고 재밌는 사람이에요ㅎㅎㅎㅎ 함께 ATF 창고에 주저앉아 사일런서를 오붓하게 조립하며 담소를 나누던 시간... 잊지 않을게여..."
+      }
+];
+    /*DEFAULT_LETTERS_END*/
+
+    let lettersData = JSON.parse(localStorage.getItem('farm_letters_v10')) || defaultLetters;
+    let readIds = new Set(JSON.parse(localStorage.getItem('farm_read_v10') || '[]'));
+
+    /* =====================================================================
+       [2] Web Audio API 사운드 시스템
+       ===================================================================== */
+    let soundEnabled = true;
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) audioCtx = new AudioContext();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playBaaSound(pitchScale = 1.0) {
+      if (!soundEnabled) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const lfo = audioCtx.createOscillator();
+      const lfoGain = audioCtx.createGain();
+      const mainGain = audioCtx.createGain();
+      const filter = audioCtx.createBiquadFilter();
+
+      osc.type = 'sawtooth';
+      const baseFreq = (310 + Math.random() * 50) * pitchScale;
+      osc.frequency.setValueAtTime(baseFreq, now);
+      osc.frequency.linearRampToValueAtTime(baseFreq * 1.12, now + 0.12);
+      osc.frequency.linearRampToValueAtTime(baseFreq * 0.88, now + 0.52);
+
+      lfo.type = 'sine';
+      lfo.frequency.setValueAtTime(19, now);
+      lfoGain.gain.setValueAtTime(18, now);
+      lfo.connect(lfoGain);
+      lfoGain.connect(osc.frequency);
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(1350, now);
+
+      mainGain.gain.setValueAtTime(0.001, now);
+      mainGain.gain.linearRampToValueAtTime(0.14, now + 0.06);
+      mainGain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+
+      osc.connect(filter);
+      filter.connect(mainGain);
+      mainGain.connect(audioCtx.destination);
+
+      osc.start(now);
+      lfo.start(now);
+      osc.stop(now + 0.56);
+      lfo.stop(now + 0.56);
+    }
+
+    function playSnackPopSound() {
+      if (!soundEnabled) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(420, now);
+      osc.frequency.exponentialRampToValueAtTime(760, now + 0.11);
+
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.13);
+    }
+
+    const soundToggleBtn = document.getElementById('soundToggleBtn');
+    soundToggleBtn.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      if (soundEnabled) {
+        soundToggleBtn.textContent = '🔊 소리 ON';
+        soundToggleBtn.classList.remove('muted');
+        playSnackPopSound();
+      } else {
+        soundToggleBtn.textContent = '🔇 소리 OFF';
+        soundToggleBtn.classList.add('muted');
+      }
+    });
+
+    /* =====================================================================
+       [3] 양 목장 렌더링 및 간식 시스템
+       ===================================================================== */
+    const SHEEP_DESIGNS = [
+      { key: 'spotted',   label: '🐄 얼룩무늬양' },
+      { key: 'gold',      label: '✨ 황금빛양' },
+      { key: 'rainbow',   label: '🌈 무지개양' },
+      { key: 'mintchoco', label: '🌿 민트초코양' },
+      { key: 'galaxy',    label: '🔮 별빛보라양' },
+      { key: 'flower',    label: '🌸 봄꽃양' },
+      { key: 'shades',    label: '🕶️ 선글라스양' },
+      { key: 'pink',      label: '🍓 딸기우유양' },
+      { key: 'choco',     label: '🍫 다크초코양' },
+      { key: 'crown',     label: '👑 골드왕관양' },
+      { key: 'tophat',    label: '🎩 신사모자양' },
+      { key: 'classic',   label: '🐑 순백뽀송양' }
+    ];
+
+    const canvas = document.getElementById('farmCanvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.getElementById('game-container');
+
+    let width, height;
+    let windmillAngle = 0;
+    let clouds = [];
+    let flowers = [];
+    let sheeps = [];
+    let snacks = [];
+    let selectedSheep = null;
+
+    let adTruck = {
+      x: -140,
+      speed: 0.65,
+      jumpY: 0,
+      jumpVel: 0,
+      isJumping: false,
+      smokeParticles: []
+    };
+
+    const introOverlay = document.getElementById('introOverlay');
+    const enterFarmBtn = document.getElementById('enterFarmBtn');
+    enterFarmBtn.addEventListener('click', () => {
+      initAudio();
+      introOverlay.classList.add('hidden');
+    });
+
+    function resize() {
+      width = container.clientWidth;
+      height = container.clientHeight;
+      canvas.width = width;
+      canvas.height = height;
+      initEnvironment();
+    }
+    window.addEventListener('resize', resize);
+
+    function initEnvironment() {
+      clouds = [];
+      for (let i = 0; i < 6; i++) {
+        clouds.push({
+          x: Math.random() * width,
+          y: height * 0.10 + Math.random() * (height * 0.22),
+          speed: 0.12 + Math.random() * 0.18,
+          scale: 0.8 + Math.random() * 0.6
+        });
+      }
+
+      flowers = [];
+      for (let i = 0; i < 30; i++) {
+        flowers.push({
+          x: Math.random() * width,
+          y: height * 0.56 + Math.random() * (height * 0.40),
+          color: i % 3 === 0 ? '#f9e784' : (i % 2 === 0 ? '#ffffff' : '#ffb3c6')
+        });
+      }
+    }
+
+    function initSheeps() {
+      const count = lettersData.length;
+      const cols = Math.ceil(Math.sqrt(count * 1.5));
+      const rows = Math.ceil(count / cols);
+
+      const minX = 36;
+      const maxX = Math.max(120, width - 36);
+      const minY = height * 0.57;
+      const maxY = height * 0.87;
+
+      sheeps = lettersData.map((data, idx) => {
+        const design = SHEEP_DESIGNS[idx % SHEEP_DESIGNS.length];
+        const col = idx % cols;
+        const row = Math.floor(idx / cols);
+
+        const cellW = (maxX - minX) / Math.max(1, cols);
+        const cellH = (maxY - minY) / Math.max(1, rows);
+
+        const startX = Math.min(maxX, Math.max(minX, minX + col * cellW + cellW * 0.5 + (Math.random() - 0.5) * cellW * 0.6));
+        const startY = Math.min(maxY, Math.max(minY, minY + row * cellH + cellH * 0.5 + (Math.random() - 0.5) * cellH * 0.6));
+
+        const baseScale = count > 20 ? 0.82 : 0.92;
+
+        return {
+          id: idx,
+          data: data,
+          design: design,
+          x: startX,
+          y: startY,
+          targetX: startX,
+          targetY: startY,
+          scale: baseScale + (idx % 3) * 0.08,
+          facing: Math.random() > 0.5 ? 1 : -1,
+          speed: 0.32 + Math.random() * 0.25,
+          isMoving: false,
+          attractedToSnack: false,
+          moveTimer: 30 + Math.random() * 140,
+          jumpY: 0,
+          jumpVel: 0,
+          isJumping: false,
+          heartTimer: 0,
+          baaTextTimer: 0,
+          bobPhase: Math.random() * Math.PI * 2
+        };
+      });
+    }
+
+    function spawnSnack(x, y) {
+      const snackY = Math.max(height * 0.56, Math.min(height * 0.88, y));
+      const snackTypes = ['carrot', 'hay', 'apple'];
+      const chosenType = snackTypes[Math.floor(Math.random() * snackTypes.length)];
+
+      snacks.push({
+        x: x,
+        y: snackY,
+        type: chosenType,
+        life: 320,
+        dropY: 18
+      });
+      if (snacks.length > 5) snacks.shift();
+
+      playSnackPopSound();
+
+      const sortedByDist = [...sheeps]
+        .filter(s => !selectedSheep || s.id !== selectedSheep.id)
+        .sort((a, b) => Math.hypot(a.x - x, a.y - snackY) - Math.hypot(b.x - x, b.y - snackY));
+
+      const attractCount = Math.min(sortedByDist.length, 4 + Math.floor(Math.random() * 3));
+
+      for (let i = 0; i < attractCount; i++) {
+        const s = sortedByDist[i];
+        const angle = (Math.PI * 2 / attractCount) * i + (Math.random() - 0.5) * 0.4;
+        const radius = 22 + Math.random() * 18;
+
+        s.targetX = Math.max(35, Math.min(width - 35, x + Math.cos(angle) * radius));
+        s.targetY = Math.max(height * 0.56, Math.min(height * 0.88, snackY + Math.sin(angle) * (radius * 0.6)));
+        s.isMoving = true;
+        s.attractedToSnack = true;
+        s.moveTimer = 260;
+
+        if (i === 0) {
+          s.baaTextTimer = 65;
+          setTimeout(() => playBaaSound(0.95 + Math.random() * 0.2), 120);
+        } else if (i === 1 && Math.random() < 0.7) {
+          setTimeout(() => {
+            s.baaTextTimer = 60;
+            playBaaSound(1.05 + Math.random() * 0.2);
+          }, 420);
+        }
+      }
+    }
+
+    function updateAndDrawSnacks() {
+      snacks.forEach(sn => {
+        sn.life--;
+        if (sn.dropY > 0) sn.dropY = Math.max(0, sn.dropY - 2.5);
+
+        ctx.save();
+        ctx.translate(sn.x, sn.y - sn.dropY);
+        if (sn.life < 40) ctx.globalAlpha = sn.life / 40;
+
+        ctx.fillStyle = "rgba(25, 40, 25, 0.35)";
+        ctx.fillRect(-10, 5, 20, 4);
+
+        if (sn.type === 'carrot') {
+          ctx.fillStyle = "#4ea93b";
+          ctx.fillRect(-9, -9, 5, 5);
+          ctx.fillRect(-11, -11, 3, 4);
+          ctx.fillStyle = "#ff7b00";
+          ctx.fillRect(-5, -6, 12, 8);
+          ctx.fillRect(7, -4, 5, 5);
+          ctx.fillStyle = "#ffa200";
+          ctx.fillRect(-3, -5, 8, 3);
+        } else if (sn.type === 'hay') {
+          ctx.fillStyle = "#d4a338";
+          ctx.fillRect(-12, -4, 24, 10);
+          ctx.fillStyle = "#f4c44e";
+          ctx.fillRect(-10, -8, 20, 10);
+          ctx.fillRect(-6, -11, 12, 5);
+          ctx.fillStyle = "#c94a29";
+          ctx.fillRect(-2, -8, 4, 13);
+        } else {
+          ctx.fillStyle = "#e63946";
+          ctx.fillRect(-7, -8, 14, 12);
+          ctx.fillStyle = "#ff758f";
+          ctx.fillRect(-5, -6, 4, 4);
+          ctx.fillStyle = "#5c3c10";
+          ctx.fillRect(-1, -11, 2, 4);
+          ctx.fillStyle = "#52b788";
+          ctx.fillRect(1, -11, 5, 3);
+        }
+
+        ctx.restore();
+      });
+
+      snacks = snacks.filter(sn => sn.life > 0);
+    }
+
+    function drawPixelScene() {
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, height * 0.55);
+      skyGrad.addColorStop(0, "#3d867e");
+      skyGrad.addColorStop(0.65, "#59a89a");
+      skyGrad.addColorStop(1, "#d9e6b5");
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, width, height);
+
+      clouds.forEach(c => {
+        c.x += c.speed;
+        if (c.x > width + 80) c.x = -80;
+        drawPixelCloud(c.x, c.y, c.scale);
+      });
+
+      ctx.fillStyle = "#2f6b67";
+      ctx.beginPath();
+      ctx.moveTo(0, height * 0.54);
+      ctx.lineTo(width * 0.25, height * 0.39);
+      ctx.lineTo(width * 0.52, height * 0.51);
+      ctx.lineTo(width * 0.85, height * 0.43);
+      ctx.lineTo(width, height * 0.52);
+      ctx.lineTo(width, height);
+      ctx.lineTo(0, height);
+      ctx.fill();
+
+      ctx.fillStyle = "#488b82";
+      ctx.beginPath();
+      ctx.moveTo(width * 0.25, height * 0.39);
+      ctx.lineTo(width * 0.38, height * 0.45);
+      ctx.lineTo(width * 0.25, height * 0.51);
+      ctx.fill();
+
+      drawCommercialBillboard();
+      drawWindmillAndBarn();
+
+      ctx.fillStyle = "#5c914b";
+      ctx.beginPath();
+      ctx.moveTo(0, height * 0.49);
+      ctx.lineTo(width, height * 0.55);
+      ctx.lineTo(width, height);
+      ctx.lineTo(0, height);
+      ctx.fill();
+
+      ctx.fillStyle = "#48753b";
+      for (let i = 0; i < 4; i++) {
+        const yPos = height * (0.56 + i * 0.11);
+        ctx.beginPath();
+        ctx.moveTo(0, yPos);
+        ctx.lineTo(width, yPos + 18);
+        ctx.lineTo(width, yPos + 30);
+        ctx.lineTo(0, yPos + 12);
+        ctx.fill();
+      }
+
+      updateAndDrawAdTruck();
+      drawFenceLine(height * 0.49, height * 0.55, 3, "#233329");
+
+      flowers.forEach(f => {
+        ctx.fillStyle = "#3b6331";
+        ctx.fillRect(f.x, f.y, 4, 4);
+        ctx.fillStyle = f.color;
+        ctx.fillRect(f.x, f.y - 3, 4, 4);
+      });
+
+      ctx.fillStyle = "#62a38c";
+      ctx.beginPath();
+      ctx.arc(width * 0.86, height * 0.89, 22, Math.PI, 0);
+      ctx.fill();
+      ctx.fillStyle = "#49806d";
+      ctx.fillRect(width * 0.86 - 22, height * 0.89, 44, 6);
+    }
+
+    function drawPixelCloud(x, y, s) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(s, s);
+      ctx.fillStyle = "#f7f3cf";
+      ctx.fillRect(-36, 0, 72, 20);
+      ctx.fillRect(-24, -12, 48, 14);
+      ctx.fillRect(-10, -22, 24, 12);
+      ctx.fillStyle = "#d9d8b2";
+      ctx.fillRect(-36, 16, 72, 5);
+      ctx.restore();
+    }
+
+    function drawCommercialBillboard() {
+      const signX = Math.max(14, width * 0.06);
+      const groundY = height * 0.50;
+      const postHeight = 82;
+      const topY = groundY - postHeight;
+
+      ctx.save();
+      ctx.fillStyle = "#5c6b73";
+      ctx.fillRect(signX, topY, 6, postHeight);
+      ctx.fillRect(signX, topY, 108, 6);
+
+      ctx.fillStyle = "#8d99ae";
+      ctx.fillRect(signX + 1, topY + 1, 2, postHeight - 2);
+      ctx.fillRect(signX + 1, topY + 1, 106, 2);
+
+      ctx.fillStyle = "#3d4950";
+      ctx.fillRect(signX - 4, groundY - 6, 14, 6);
+
+      ctx.fillStyle = "#8d99ae";
+      ctx.fillRect(signX + 24, topY + 6, 4, 7);
+      ctx.fillRect(signX + 84, topY + 6, 4, 7);
+
+      const boardX = signX + 10;
+      const boardY = topY + 13;
+      const boardW = 94;
+      const boardH = 50;
+
+      ctx.fillStyle = "#781d19";
+      ctx.fillRect(boardX + 3, boardY + 3, boardW, boardH);
+
+      ctx.fillStyle = "#e6392e";
+      ctx.fillRect(boardX, boardY, boardW, boardH);
+      ctx.fillStyle = "#f46036";
+      ctx.fillRect(boardX + 3, boardY + 3, 4, boardH - 6);
+
+      ctx.strokeStyle = "#2b1c1a";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(boardX, boardY, boardW, boardH);
+
+      const blink = Math.floor(Date.now() / 450) % 2 === 0;
+      for (let i = 0; i < 4; i++) {
+        ctx.fillStyle = (i % 2 === 0 ? blink : !blink) ? "#ffe66d" : "#b89d35";
+        ctx.fillRect(boardX + 12 + i * 22, boardY - 4, 6, 4);
+      }
+
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#69140e";
+      ctx.font = "bold 17px DungGeunMo";
+      ctx.fillText("지영프로님", boardX + boardW / 2 + 1, boardY + 23);
+      ctx.font = "13px DungGeunMo";
+      ctx.fillText("행복하세여...", boardX + boardW / 2 + 1, boardY + 42);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 17px DungGeunMo";
+      ctx.fillText("지영프로님", boardX + boardW / 2, boardY + 22);
+
+      ctx.fillStyle = "#ffe66d";
+      ctx.font = "13px DungGeunMo";
+      ctx.fillText("행복하세여...", boardX + boardW / 2, boardY + 41);
+
+      ctx.restore();
+    }
+
+    function updateAndDrawAdTruck() {
+      adTruck.x += adTruck.speed;
+      if (adTruck.x > width + 160) adTruck.x = -160;
+
+      if (adTruck.isJumping) {
+        adTruck.jumpY += adTruck.jumpVel;
+        adTruck.jumpVel -= 0.5;
+        if (adTruck.jumpY <= 0) {
+          adTruck.jumpY = 0;
+          adTruck.isJumping = false;
+        }
+      }
+
+      const progress = adTruck.x / Math.max(1, width);
+      const roadY = (height * 0.485) + (height * 0.06) * progress;
+      const slopeAngle = Math.atan2(height * 0.06, width);
+      const engineBounce = Math.floor(Date.now() / 120) % 2 === 0 ? 1.5 : 0;
+
+      if (Math.random() < 0.18) {
+        adTruck.smokeParticles.push({
+          x: adTruck.x - 56,
+          y: roadY - 12 - adTruck.jumpY,
+          size: 4 + Math.random() * 4,
+          alpha: 0.85
+        });
+      }
+
+      adTruck.smokeParticles.forEach(p => {
+        p.x -= 0.4;
+        p.y -= 0.5;
+        p.alpha -= 0.018;
+        if (p.alpha > 0) {
+          ctx.fillStyle = `rgba(245, 243, 220, ${p.alpha})`;
+          ctx.fillRect(p.x, p.y, p.size, p.size);
+        }
+      });
+      adTruck.smokeParticles = adTruck.smokeParticles.filter(p => p.alpha > 0);
+
+      ctx.save();
+      ctx.translate(adTruck.x, roadY - adTruck.jumpY - engineBounce);
+      ctx.rotate(slopeAngle);
+
+      const cargoW = 92;
+      const cargoH = 44;
+      ctx.fillStyle = "#143654";
+      ctx.fillRect(-54, -cargoH - 6, cargoW, cargoH);
+
+      ctx.fillStyle = "#1e6091";
+      ctx.fillRect(-54, -cargoH - 6, cargoW - 4, cargoH - 4);
+
+      ctx.fillStyle = "#ffd166";
+      ctx.fillRect(-54, -cargoH - 9, 34, 4);
+
+      ctx.strokeStyle = "#0b253c";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(-54, -cargoH - 6, cargoW, cargoH);
+
+      ctx.fillStyle = "#2ec4b6";
+      ctx.fillRect(38, -38, 28, 32);
+      ctx.strokeRect(38, -38, 28, 32);
+
+      ctx.fillStyle = "#14213d";
+      ctx.fillRect(42, -34, 20, 14);
+      ctx.fillStyle = "#a9def9";
+      ctx.fillRect(44, -32, 4, 10);
+
+      ctx.fillStyle = "#ffd166";
+      ctx.fillRect(66, -32, 4, 8);
+
+      ctx.fillStyle = "#e0e1dd";
+      ctx.fillRect(62, -18, 5, 8);
+      ctx.fillStyle = "#ffbe0b";
+      ctx.fillRect(63, -22, 4, 4);
+      ctx.fillStyle = "#adb5bd";
+      ctx.fillRect(38, -10, 31, 5);
+
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#ffea79";
+      ctx.font = "bold 16px DungGeunMo";
+      ctx.fillText("P4A BRX", -8, -30);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "12px DungGeunMo";
+      ctx.fillText("잊지마...", -8, -14);
+
+      const wheelPositions = [-28, 44];
+      wheelPositions.forEach(wx => {
+        ctx.fillStyle = "#1b1f22";
+        ctx.fillRect(wx - 9, -12, 18, 12);
+        ctx.fillStyle = "#f48c06";
+        ctx.fillRect(wx - 5, -9, 10, 6);
+      });
+
+      ctx.restore();
+    }
+
+    function drawWindmillAndBarn() {
+      const baseX = width * 0.65;
+      const baseY = height * 0.53;
+
+      ctx.fillStyle = "#9c3d35";
+      ctx.beginPath();
+      ctx.moveTo(baseX - 38, baseY);
+      ctx.lineTo(baseX - 30, baseY - 95);
+      ctx.lineTo(baseX - 10, baseY - 95);
+      ctx.lineTo(baseX - 2, baseY);
+      ctx.fill();
+
+      ctx.fillStyle = "#6e221f";
+      ctx.beginPath();
+      ctx.moveTo(baseX - 34, baseY - 95);
+      ctx.lineTo(baseX - 20, baseY - 115);
+      ctx.lineTo(baseX - 6, baseY - 95);
+      ctx.fill();
+
+      ctx.fillStyle = "#f5e9bf";
+      ctx.fillRect(baseX - 18, baseY - 72, 6, 12);
+
+      windmillAngle += 0.012;
+      ctx.save();
+      ctx.translate(baseX - 20, baseY - 88);
+      ctx.rotate(windmillAngle);
+      ctx.fillStyle = "#1e2a29";
+      for (let i = 0; i < 4; i++) {
+        ctx.rotate(Math.PI / 2);
+        ctx.fillRect(-2, -52, 4, 52);
+        ctx.fillRect(-9, -46, 18, 8);
+      }
+      ctx.fillStyle = "#f2c96b";
+      ctx.fillRect(-3, -3, 6, 6);
+      ctx.restore();
+
+      const barnX = baseX + 10;
+      const barnY = baseY + 4;
+      ctx.fillStyle = "#b53f38";
+      ctx.fillRect(barnX, barnY - 56, 76, 56);
+
+      ctx.fillStyle = "#222930";
+      ctx.beginPath();
+      ctx.arc(barnX + 38, barnY - 54, 40, Math.PI, 0);
+      ctx.fill();
+
+      ctx.fillStyle = "#232629";
+      ctx.fillRect(barnX + 10, barnY - 36, 24, 36);
+      ctx.strokeStyle = "#f0e8c9";
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(barnX + 10, barnY - 36, 24, 36);
+      ctx.beginPath();
+      ctx.moveTo(barnX + 10, barnY - 36);
+      ctx.lineTo(barnX + 34, barnY);
+      ctx.stroke();
+
+      for (let w = 0; w < 3; w++) {
+        ctx.fillStyle = "#232629";
+        ctx.fillRect(barnX + 41 + w * 11, barnY - 24, 7, 9);
+        ctx.strokeRect(barnX + 41 + w * 11, barnY - 24, 7, 9);
+      }
+    }
+
+    function drawFenceLine(yStart, yEnd, thickness, color) {
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = thickness;
+
+      ctx.beginPath();
+      ctx.moveTo(0, yStart - 8);
+      ctx.lineTo(width, yEnd - 8);
+      ctx.moveTo(0, yStart - 16);
+      ctx.lineTo(width, yEnd - 16);
+      ctx.stroke();
+
+      const steps = 10;
+      for (let i = 0; i <= steps; i++) {
+        const px = (width / steps) * i;
+        const py = yStart + (yEnd - yStart) * (i / steps);
+        ctx.fillRect(px - 2, py - 22, 4, 22);
+      }
+    }
+
+    function drawSheep(s) {
+      const walkBob = s.isMoving ? Math.abs(Math.sin(Date.now() * 0.012 + s.bobPhase)) * 3.5 : 0;
+      const isUnread = !readIds.has(s.id);
+      const dKey = s.design.key;
+
+      ctx.save();
+      ctx.translate(s.x, s.y - s.jumpY - walkBob);
+      ctx.scale(s.facing * s.scale, s.scale);
+
+      ctx.fillStyle = "rgba(30, 50, 30, 0.35)";
+      ctx.fillRect(-16, 12, 32, 5);
+
+      if (isUnread) {
+        const pulse = 0.65 + 0.35 * Math.sin(Date.now() * 0.007 + s.id);
+        ctx.save();
+        ctx.fillStyle = `rgba(255, 238, 85, ${pulse * 0.45})`;
+        ctx.fillRect(-25, -21, 48, 30);
+        ctx.fillRect(9, -15, 20, 19);
+
+        ctx.fillStyle = `rgba(255, 230, 0, ${pulse})`;
+        ctx.fillRect(-23, -16, 44, 22);
+        ctx.fillRect(-20, -19, 38, 25);
+        ctx.fillRect(-16, -20, 32, 8);
+        ctx.fillRect(10, -13, 17, 16);
+        ctx.restore();
+      }
+
+      let woolMain = "#f7f5dd";
+      let woolShade = "#d5d3b3";
+      let faceColor = "#1f2421";
+
+      if (dKey === 'choco') {
+        woolMain = "#4a3b32"; woolShade = "#332821"; faceColor = "#17120e";
+      } else if (dKey === 'pink') {
+        woolMain = "#ffc8dd"; woolShade = "#ffafcc"; faceColor = "#2b2124";
+      } else if (dKey === 'gold') {
+        woolMain = "#ffd60a"; woolShade = "#fca311"; faceColor = "#3d2b1f";
+      } else if (dKey === 'mintchoco') {
+        woolMain = "#9bf6ff"; woolShade = "#64dfdf"; faceColor = "#3c2518";
+      } else if (dKey === 'galaxy') {
+        woolMain = "#7209b7"; woolShade = "#560bad"; faceColor = "#10002b";
+      }
+
+      ctx.fillStyle = faceColor;
+      const legOffset = s.isMoving ? Math.sin(Date.now() * 0.02 + s.bobPhase) * 2.5 : 0;
+      ctx.fillRect(-13, 6 + legOffset, 4, 9);
+      ctx.fillRect(-6,  6 - legOffset, 4, 9);
+      ctx.fillRect(4,   6 + legOffset, 4, 9);
+      ctx.fillRect(11,  6 - legOffset, 4, 9);
+
+      ctx.fillStyle = woolShade;
+      ctx.fillRect(-18, -10, 36, 18);
+      ctx.fillRect(-21, -6, 42, 11);
+
+      ctx.fillStyle = woolMain;
+      ctx.fillRect(-18, -14, 36, 18);
+      ctx.fillRect(-21, -10, 40, 12);
+      ctx.fillRect(-14, -17, 28, 5);
+
+      if (dKey === 'spotted') {
+        ctx.fillStyle = "#22252a";
+        ctx.fillRect(-15, -13, 8, 7);
+        ctx.fillRect(-3, -6, 9, 7);
+        ctx.fillRect(5, -15, 6, 5);
+        ctx.fillRect(-18, -3, 6, 5);
+      } else if (dKey === 'rainbow') {
+        ctx.fillStyle = "#ffadad"; ctx.fillRect(-18, -14, 9, 16);
+        ctx.fillStyle = "#fdffb6"; ctx.fillRect(-9, -14, 9, 16);
+        ctx.fillStyle = "#caffbf"; ctx.fillRect(0, -14, 9, 16);
+        ctx.fillStyle = "#a0c4ff"; ctx.fillRect(9, -14, 9, 16);
+      } else if (dKey === 'mintchoco') {
+        ctx.fillStyle = "#4a2c11";
+        ctx.fillRect(-12, -12, 4, 4);
+        ctx.fillRect(-2, -15, 4, 4);
+        ctx.fillRect(6, -9, 4, 4);
+        ctx.fillRect(-7, -5, 4, 4);
+      } else if (dKey === 'galaxy') {
+        ctx.fillStyle = "#ffea79";
+        ctx.fillRect(-11, -12, 3, 3);
+        ctx.fillRect(2, -14, 2, 2);
+        ctx.fillRect(-3, -6, 3, 3);
+      } else if (dKey === 'gold') {
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(-12, -14, 4, 4);
+        ctx.fillRect(3, -12, 3, 3);
+      }
+
+      ctx.fillStyle = faceColor;
+      ctx.fillRect(12, -11, 13, 12);
+      ctx.fillRect(9, -9, 4, 5);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(19, -8, 3, 3);
+
+      if (dKey === 'flower') {
+        ctx.fillStyle = "#ff5c77"; ctx.fillRect(11, -16, 6, 6);
+        ctx.fillStyle = "#ffeb6b"; ctx.fillRect(13, -14, 2, 2);
+      } else if (dKey === 'shades') {
+        ctx.fillStyle = "#000000"; ctx.fillRect(16, -9, 10, 4);
+        ctx.fillStyle = "#48cae4"; ctx.fillRect(18, -8, 2, 2); ctx.fillRect(22, -8, 2, 2);
+      } else if (dKey === 'crown') {
+        ctx.fillStyle = "#ffcc00"; ctx.fillRect(12, -17, 10, 6);
+        ctx.fillStyle = "#e63946"; ctx.fillRect(16, -14, 2, 2);
+      } else if (dKey === 'tophat') {
+        ctx.fillStyle = "#1d1e22"; ctx.fillRect(10, -13, 14, 3); ctx.fillRect(12, -21, 10, 8);
+        ctx.fillStyle = "#e63946"; ctx.fillRect(12, -15, 10, 2);
+      } else if (dKey === 'pink') {
+        ctx.fillStyle = "#ff4d6d"; ctx.fillRect(17, -4, 3, 2);
+      }
+
+      ctx.restore();
+
+      if (s.heartTimer > 0) {
+        ctx.save();
+        ctx.translate(s.x, s.y - s.jumpY);
+        s.heartTimer--;
+        ctx.font = "14px DungGeunMo";
+        ctx.fillStyle = "#ff4d6d";
+        ctx.fillText("♥", -5, -24 - (35 - s.heartTimer) * 0.4);
+        ctx.restore();
+      }
+
+      if (s.baaTextTimer > 0) {
+        ctx.save();
+        ctx.translate(s.x, s.y - s.jumpY);
+        s.baaTextTimer--;
+        const floatUp = (65 - s.baaTextTimer) * 0.25;
+        ctx.font = "bold 12px DungGeunMo";
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#28392e";
+        ctx.fillText("메에~ ♪", 1, -25 - floatUp);
+        ctx.fillStyle = "#fffdf0";
+        ctx.fillText("메에~ ♪", 0, -26 - floatUp);
+        ctx.restore();
+      }
+    }
+
+    function updateSheeps() {
+      const minY = height * 0.56;
+      const maxY = height * 0.87;
+
+      sheeps.forEach(s => {
+        if (s.isJumping) {
+          s.jumpY += s.jumpVel;
+          s.jumpVel -= 0.55;
+          if (s.jumpY <= 0) {
+            s.jumpY = 0;
+            s.isJumping = false;
+          }
+        }
+
+        if (selectedSheep && selectedSheep.id === s.id) {
+          s.isMoving = false;
+          return;
+        }
+
+        s.moveTimer--;
+        if (s.moveTimer <= 0) {
+          s.attractedToSnack = false;
+          s.moveTimer = 100 + Math.random() * 180;
+          s.isMoving = Math.random() > 0.45;
+          if (s.isMoving) {
+            s.targetX = 40 + Math.random() * (width - 80);
+            s.targetY = minY + Math.random() * (maxY - minY);
+          }
+        }
+
+        if (s.isMoving && !s.isJumping) {
+          const dx = s.targetX - s.x;
+          const dy = s.targetY - s.y;
+          const dist = Math.hypot(dx, dy);
+          const moveSpeed = s.attractedToSnack ? s.speed * 1.45 : s.speed;
+
+          if (dist > 4) {
+            s.facing = dx >= 0 ? 1 : -1;
+            s.x += (dx / dist) * moveSpeed;
+            s.y += (dy / dist) * moveSpeed;
+          } else {
+            s.isMoving = false;
+            if (s.attractedToSnack) {
+              s.attractedToSnack = false;
+              s.heartTimer = 35;
+              s.baaTextTimer = 50;
+              s.isJumping = true;
+              s.jumpVel = 4.5;
+            }
+          }
+        }
+      });
+
+      sheeps.sort((a, b) => a.y - b.y);
+    }
+
+    const speechBubble = document.getElementById('speechBubble');
+    const bubbleAuthor = document.getElementById('bubbleAuthor');
+    const bubbleSheepType = document.getElementById('bubbleSheepType');
+    const wrapBubble1 = document.getElementById('wrapBubble1');
+    const bubbleMsg1 = document.getElementById('bubbleMsg1');
+    const bubbleCat2 = document.getElementById('bubbleCat2');
+    const bubbleMsg2 = document.getElementById('bubbleMsg2');
+    const bubble2 = document.getElementById('bubble2');
+
+    let billboardTapCount = 0;
+    let billboardTapTimer = null;
+
+    function openSheepBubble(sheep) {
+      selectedSheep = sheep;
+
+      sheep.isJumping = true;
+      sheep.jumpVel = 7.5;
+      sheep.heartTimer = 35;
+      sheep.baaTextTimer = 55;
+      playBaaSound(1.0);
+
+      readIds.add(sheep.id);
+      localStorage.setItem('farm_read_v10', JSON.stringify([...readIds]));
+
+      bubbleAuthor.textContent = `From. ${sheep.data.author}`;
+      bubbleSheepType.textContent = sheep.design.label;
+
+      const hasMsg1 = sheep.data.msg1 && sheep.data.msg1.trim() !== "";
+      if (hasMsg1) {
+        bubbleMsg1.textContent = sheep.data.msg1;
+        wrapBubble1.style.display = 'block';
+      } else {
+        wrapBubble1.style.display = 'none';
+      }
+
+      const hasMsg2 = sheep.data.msg2 && sheep.data.msg2.trim() !== "";
+      if (hasMsg2) {
+        bubbleCat2.textContent = `✨ ${sheep.data.cat2 || '프로님께 고마웠던 일!'}`;
+        bubbleMsg2.textContent = sheep.data.msg2;
+        bubble2.style.display = 'block';
+      } else {
+        bubble2.style.display = 'none';
+      }
+
+      speechBubble.style.display = 'flex';
+      speechBubble.style.animation = 'none';
+      speechBubble.offsetHeight;
+      speechBubble.style.animation = null;
+
+      syncBubblePosition();
+    }
+
+    function syncBubblePosition() {
+      if (!selectedSheep || speechBubble.style.display === 'none') return;
+
+      const bubbleW = speechBubble.offsetWidth || 270;
+      const halfW = bubbleW / 2 + 12;
+
+      const clampedX = Math.max(halfW, Math.min(width - halfW, selectedSheep.x));
+      const topY = Math.max(speechBubble.offsetHeight + 75, selectedSheep.y - selectedSheep.jumpY - 26);
+
+      speechBubble.style.left = `${clampedX}px`;
+      speechBubble.style.top = `${topY}px`;
+    }
+
+    function closeBubble() {
+      speechBubble.style.display = 'none';
+      selectedSheep = null;
+    }
+
+    container.addEventListener('pointerdown', (e) => {
+      if (
+        !introOverlay.classList.contains('hidden') ||
+        e.target.closest('.top-bar') ||
+        e.target.closest('.modal-overlay') ||
+        e.target.closest('#speechBubble')
+      ) {
+        return;
+      }
+
+      const rect = canvas.getBoundingClientRect();
+      const tx = e.clientX - rect.left;
+      const ty = e.clientY - rect.top;
+
+      const signX = Math.max(14, width * 0.06);
+      const groundY = height * 0.50;
+      if (tx >= signX && tx <= signX + 115 && ty >= groundY - 85 && ty <= groundY) {
+        billboardTapCount++;
+        clearTimeout(billboardTapTimer);
+        billboardTapTimer = setTimeout(() => { billboardTapCount = 0; }, 1500);
+        if (billboardTapCount >= 5) {
+          billboardTapCount = 0;
+          openAdminModal();
+        }
+        return;
+      }
+
+      const truckRoadY = (height * 0.485) + (height * 0.06) * (adTruck.x / Math.max(1, width));
+      if (Math.abs(tx - adTruck.x) < 65 && Math.abs(ty - (truckRoadY - 25)) < 35) {
+        adTruck.isJumping = true;
+        adTruck.jumpVel = 6;
+        playSnackPopSound();
+        return;
+      }
+
+      let hitSheep = null;
+      let minDist = 42;
+
+      for (let i = sheeps.length - 1; i >= 0; i--) {
+        const s = sheeps[i];
+        const d = Math.hypot(tx - s.x, ty - (s.y - 6));
+        if (d < minDist) {
+          minDist = d;
+          hitSheep = s;
+        }
+      }
+
+      if (hitSheep) {
+        openSheepBubble(hitSheep);
+      } else {
+        closeBubble();
+        if (ty >= height * 0.52) {
+          spawnSnack(tx, ty);
+        }
+      }
+    });
+
+    speechBubble.addEventListener('click', () => {
+      closeBubble();
+    });
+
+    /* =====================================================================
+       [4] 모아보기 탭 & 스마트 표 관리자
+       ===================================================================== */
+    const listModal = document.getElementById('listModal');
+    const openListBtn = document.getElementById('openListBtn');
+    const closeListBtn = document.getElementById('closeListBtn');
+    const modalLetterList = document.getElementById('modalLetterList');
+
+    openListBtn.addEventListener('click', () => {
+      modalLetterList.innerHTML = '';
+      sheeps.forEach((s) => {
+        const card = document.createElement('div');
+        card.className = 'letter-card';
+
+        let html = `
+          <div class="letter-card-header">
+            <strong>From. ${s.data.author}</strong>
+            <span>${s.design.label}</span>
+          </div>
+        `;
+
+        const hasMsg1 = s.data.msg1 && s.data.msg1.trim() !== '';
+        if (hasMsg1) {
+          html += `
+            <div class="letter-cell">
+              <span class="tag-banner">💌 편지</span>
+              <div class="cell-body">${s.data.msg1}</div>
+            </div>
+          `;
+        }
+
+        const hasMsg2 = s.data.msg2 && s.data.msg2.trim() !== '';
+        if (hasMsg2) {
+          const catBanner = s.data.cat2 || '프로님께 고마웠던 일!';
+          html += `
+            <div class="letter-cell second">
+              <span class="tag-banner">✨ ${catBanner}</span>
+              <div class="cell-body">${s.data.msg2}</div>
+            </div>
+          `;
+        }
+
+        card.innerHTML = html;
+        card.addEventListener('click', () => {
+          listModal.style.display = 'none';
+          openSheepBubble(s);
+        });
+        modalLetterList.appendChild(card);
+      });
+      closeBubble();
+      listModal.style.display = 'flex';
+    });
+
+    closeListBtn.addEventListener('click', () => {
+      listModal.style.display = 'none';
+    });
+
+    const secretAdminTrigger = document.getElementById('secretAdminTrigger');
+    const adminModal = document.getElementById('adminModal');
+    const closeAdminBtn = document.getElementById('closeAdminBtn');
+    const adminTableBody = document.getElementById('adminTableBody');
+    const excelPasteZone = document.getElementById('excelPasteZone');
+    const addRowBtn = document.getElementById('addRowBtn');
+    const clearAllRowsBtn = document.getElementById('clearAllRowsBtn');
+    const saveAdminBtn = document.getElementById('saveAdminBtn');
+    const copyFullHtmlBtn = document.getElementById('copyFullHtmlBtn');
+
+    let secretTapCount = 0;
+    let secretTapTimer = null;
+
+    function renderAdminTable(dataArray) {
+      adminTableBody.innerHTML = '';
+      dataArray.forEach((item) => addTableRow(item.author, item.msg1, item.cat2, item.msg2));
+    }
+
+    function addTableRow(author = '', msg1 = '', cat2 = '프로님께 고마웠던 일!', msg2 = '') {
+      if (adminTableBody.children.length >= 30) return;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="text" class="inp-author" placeholder="이름" value="${author.replace(/"/g, '&quot;')}"></td>
+        <td><textarea class="inp-msg1" rows="2" placeholder="편지 내용">${msg1}</textarea></td>
+        <td><input type="text" class="inp-cat2" list="catOptions" placeholder="배너명" value="${(cat2 || '프로님께 고마웠던 일!').replace(/"/g, '&quot;')}"></td>
+        <td><textarea class="inp-msg2" rows="2" placeholder="두 번째 내용">${msg2 || ''}</textarea></td>
+        <td style="text-align:center;"><button type="button" class="btn-del-row">✕</button></td>
+      `;
+      tr.querySelector('.btn-del-row').addEventListener('click', () => tr.remove());
+      adminTableBody.appendChild(tr);
+    }
+
+    function readTableData() {
+      const rows = [...adminTableBody.querySelectorAll('tr')];
+      return rows.map(tr => ({
+        author: (tr.querySelector('.inp-author').value || '익명').trim(),
+        msg1: (tr.querySelector('.inp-msg1').value || '').trim(),
+        cat2: (tr.querySelector('.inp-cat2').value || '프로님께 고마웠던 일!').trim(),
+        msg2: (tr.querySelector('.inp-msg2').value || '').trim()
+      })).filter(item => item.msg1 !== '' || item.msg2 !== '');
+    }
+
+    function extractCategoryFromText(rawText) {
+      if (!rawText) return { cat2: '프로님께 고마웠던 일!', msg2: '' };
+      const knownCats = ['프로님께 고마웠던 일!', '프로님께 고마웠던 일', '이행시', '첫인상과 지금 인상', '첫인상과 지금인상'];
+      const lines = rawText.split('\n');
+      const firstLineClean = lines[0].replace(/^[\[\(\<\{\-\*]+|[\]\)\>\}\-\*:]+$/g, '').trim();
+
+      for (const k of knownCats) {
+        if (firstLineClean === k || firstLineClean.includes(k)) {
+          const rest = lines.slice(1).join('\n').trim();
+          const normalizedCat = k.includes('고마웠던') ? '프로님께 고마웠던 일!' : (k.includes('첫인상') ? '첫인상과 지금 인상' : '이행시');
+          return { cat2: normalizedCat, msg2: rest || rawText };
+        }
+      }
+      return { cat2: '프로님께 고마웠던 일!', msg2: rawText };
+    }
+
+    excelPasteZone.addEventListener('paste', (e) => {
+      e.preventDefault();
+      const clipboard = e.clipboardData || window.clipboardData;
+      const htmlData = clipboard.getData('text/html');
+      const textData = clipboard.getData('text/plain');
+
+      let extractedRows = [];
+
+      if (htmlData && htmlData.includes('<table')) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlData;
+        const trs = tempDiv.querySelectorAll('tr');
+        trs.forEach(tr => {
+          const cells = [...tr.querySelectorAll('td, th')].map(td => {
+            td.querySelectorAll('br').forEach(br => br.replaceWith('\n'));
+            return td.innerText.trim();
+          });
+          if (cells.length > 0 && cells.some(c => c !== '')) {
+            extractedRows.push(cells);
+          }
+        });
+      }
+
+      if (extractedRows.length === 0 && textData) {
+        extractedRows = parseMultilineTSV(textData);
+      }
+
+      if (extractedRows.length > 0) {
+        const firstCell = (extractedRows[0][0] || '').toLowerCase();
+        if (firstCell.includes('이름') || firstCell.includes('타임스탬프') || firstCell.includes('작성자') || firstCell.includes('timestamp')) {
+          extractedRows.shift();
+        }
+
+        const formatted = extractedRows.slice(0, 30).map(cols => {
+          const looksLikeTimestamp = /^202\d[.\-/]|^\d{4}\.\s*\d{1,2}/.test(cols[0] || '');
+          const offset = (looksLikeTimestamp && cols.length >= 3) ? 1 : 0;
+
+          const author = cols[offset] || '익명';
+          const msg1 = cols[offset + 1] || '';
+
+          if (cols.length - offset >= 4) {
+            return {
+              author: author,
+              msg1: msg1,
+              cat2: cols[offset + 2] || '프로님께 고마웠던 일!',
+              msg2: cols[offset + 3] || ''
+            };
+          } else {
+            const splitRes = extractCategoryFromText(cols[offset + 2] || '');
+            return {
+              author: author,
+              msg1: msg1,
+              cat2: splitRes.cat2,
+              msg2: splitRes.msg2
+            };
+          }
+        }).filter(item => item.msg1 !== '' || item.msg2 !== '');
+
+        if (formatted.length > 0) {
+          renderAdminTable(formatted);
+          excelPasteZone.innerHTML = `✅ <strong>총 ${formatted.length}명의 편지와 카테고리 배너가 입력되었습니다!</strong><br>아래 [✅ 목장에 바로 적용] 버튼을 눌러주세요.`;
+        }
+      }
+    });
+
+    function parseMultilineTSV(text) {
+      const rows = [];
+      let currentRow = [];
+      let currentCell = '';
+      let inQuotes = false;
+
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        const next = text[i + 1];
+
+        if (inQuotes) {
+          if (ch === '"' && next === '"') {
+            currentCell += '"';
+            i++;
+          } else if (ch === '"') {
+            inQuotes = false;
+          } else {
+            currentCell += ch;
+          }
+        } else {
+          if (ch === '"') {
+            inQuotes = true;
+          } else if (ch === '\t') {
+            currentRow.push(currentCell.trim());
+            currentCell = '';
+          } else if (ch === '\r' && next === '\n') {
+            currentRow.push(currentCell.trim());
+            if (currentRow.some(c => c !== '')) rows.push(currentRow);
+            currentRow = [];
+            currentCell = '';
+            i++;
+          } else if (ch === '\n') {
+            currentRow.push(currentCell.trim());
+            if (currentRow.some(c => c !== '')) rows.push(currentRow);
+            currentRow = [];
+            currentCell = '';
+          } else {
+            currentCell += ch;
+          }
+        }
+      }
+      if (currentCell !== '' || currentRow.length > 0) {
+        currentRow.push(currentCell.trim());
+        if (currentRow.some(c => c !== '')) rows.push(currentRow);
+      }
+      return rows;
+    }
+
+    function openAdminModal() {
+      listModal.style.display = 'none';
+      renderAdminTable(lettersData);
+      excelPasteZone.innerHTML = `📋 엑셀/시트에서 <strong>[이름 | 편지 | 카테고리 배너 | 내용]</strong>을 복사한 뒤,<br><strong>여기를 길게 눌러 [붙여넣기]</strong> 하세요!`;
+      adminModal.style.display = 'flex';
+    }
+
+    secretAdminTrigger.addEventListener('click', (e) => {
+      if (e.target === closeListBtn) return;
+      secretTapCount++;
+      clearTimeout(secretTapTimer);
+      secretTapTimer = setTimeout(() => { secretTapCount = 0; }, 1500);
+      if (secretTapCount >= 5) {
+        secretTapCount = 0;
+        openAdminModal();
+      }
+    });
+
+    closeAdminBtn.addEventListener('click', () => {
+      adminModal.style.display = 'none';
+    });
+
+    addRowBtn.addEventListener('click', () => addTableRow('', '', '프로님께 고마웠던 일!', ''));
+    clearAllRowsBtn.addEventListener('click', () => {
+      adminTableBody.innerHTML = '';
+      addTableRow('', '', '프로님께 고마웠던 일!', '');
+    });
+
+    saveAdminBtn.addEventListener('click', () => {
+      const parsed = readTableData();
+      if (parsed.length > 0) {
+        lettersData = parsed;
+        localStorage.setItem('farm_letters_v10', JSON.stringify(lettersData));
+        readIds.clear();
+        localStorage.removeItem('farm_read_v10');
+        closeBubble();
+        initSheeps();
+        adminModal.style.display = 'none';
+      }
+    });
+
+    copyFullHtmlBtn.addEventListener('click', async () => {
+      const parsed = readTableData();
+      if (parsed.length === 0) return;
+
+      lettersData = parsed;
+      localStorage.setItem('farm_letters_v10', JSON.stringify(lettersData));
+      initSheeps();
+
+      const currentDocHtml = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+      const replacementCode = `/*DEFAULT_LETTERS_START*/\n    const defaultLetters = ${JSON.stringify(parsed, null, 6)};\n    /*DEFAULT_LETTERS_END*/`;
+      const updatedHtml = currentDocHtml.replace(
+        /\/\*DEFAULT_LETTERS_START\*\/[\s\S]*?\/\*DEFAULT_LETTERS_END\*\//,
+        replacementCode
+      );
+
+      try {
+        await navigator.clipboard.writeText(updatedHtml);
+        copyFullHtmlBtn.textContent = "✅ 복사 완료! 그대로 GitHub에 붙여넣어 배포하세요!";
+        setTimeout(() => {
+          copyFullHtmlBtn.textContent = "📋 이 표가 영구 저장된 전체 HTML 코드 복사하기 (배포용)";
+        }, 3000);
+      } catch (err) {
+        alert("복사에 실패했습니다. [목장에 바로 적용] 버튼을 먼저 눌러주세요.");
+      }
+    });
+
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      drawPixelScene();
+      updateAndDrawSnacks();
+      updateSheeps();
+      sheeps.forEach(drawSheep);
+      drawFenceLine(height * 0.90, height * 0.97, 4, "#1b2820");
+      syncBubblePosition();
+      requestAnimationFrame(animate);
+    }
+
+    resize();
+    initSheeps();
+    animate();
+  </script>
+
+<whale-quicksearch translate="no" style="visibility: visible;"></whale-quicksearch>
+</body></html>
